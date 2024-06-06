@@ -27,9 +27,7 @@ To install MDFS you can use your favorite package manager (see distro compatibil
 
 ```bash
 apt-get update
-...
-apt-get install mdfs mdfs-ctrl
-...
+apt-get install mdfs
 ```
 
 You have also the option to pull it directly from the repository.
