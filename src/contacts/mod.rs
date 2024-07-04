@@ -22,4 +22,26 @@ pub mod contacts {
         let table = read.open_table(TABLE)?;
         Ok(table.get(name)?.unwrap().value().to_string())
     }
+    
+    pub fn _insert_contact(name: &str, addr: &str) -> Result<(), Error> {
+        let db = Database::open("contacts.redb")?;
+        let write = db.begin_write()?;
+        {
+            let mut table = write.open_table(TABLE)?;
+            table.insert(name, addr)?;
+        }
+        write.commit()?;
+        Ok(())
+    }
+
+    pub fn _remove_contact(name: &str) -> Result<(), Error> {
+        let db = Database::open("contacts.redb")?;
+        let write = db.begin_write()?;
+        {
+            let mut table = write.open_table(TABLE)?;
+            table.remove(name)?;
+        }
+        write.commit()?;
+        Ok(())
+    }
 }
