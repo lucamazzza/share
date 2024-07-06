@@ -19,10 +19,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
 pub mod contacts {
     use redb::{Database, Error, TableDefinition};
     const TABLE: TableDefinition<&str, &str> = TableDefinition::new("contacts");
     
+    // TODO: REPLACE STRING LITERAL CONSTANTS WITH ENVIRONMENT VARIABLES OR A .env FILE
     const _DB_FILE: &str = "contacts.redb";
     
     pub fn _init() -> Result<(), Error> {
