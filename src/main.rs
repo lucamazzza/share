@@ -27,7 +27,6 @@ use tui::{
 };
 use crate::app::{Chat, send_message, send_response};
 
-// TODO: FIND A WAY TO TRANSFER TO MOD `APP`
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init();
