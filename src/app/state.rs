@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::history::History;
+use crate::app::history::History;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum MessageType {

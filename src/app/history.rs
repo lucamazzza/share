@@ -21,20 +21,20 @@ impl<T> History<T> {
             pointer: 0,
         }
     }
-    
+
     pub fn push(&mut self, item: T) {
         self.data[self.pointer] = Some(item);
         self.pointer = (self.pointer + 1) % HISTORY_SIZE;
-    } 
-    
+    }
+
     pub fn get(&mut self, index: usize) -> Option<&T> {
         self.data[index].as_ref()
     }
-    
+
     pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
         self.data[index].as_mut()
     }
-    
+
     pub fn get_all(&self) -> Vec<&T> {
         let mut result = vec![];
         let mut ptr = self.pointer;
@@ -46,7 +46,7 @@ impl<T> History<T> {
         }
         result
     }
-    
+
     pub fn get_count(&self) -> usize {
         self.pointer
     }
