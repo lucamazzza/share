@@ -9,19 +9,20 @@ pub enum MessageType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Message<'a> {
+pub struct Message {
     pub message_type: MessageType,
-    pub data: &'a Vec<u8>,
+    pub data: Vec<u8>,
     pub addressee: Option<String>,
     pub source: String,
 }
 
-pub struct State<'a> {
-    history: History<Message<'a>>,
-    usernames: HashMap<String, String>,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct State {
+    pub history: History<Message>,
+    pub usernames: HashMap<String, String>,
 }
 
-impl State<'static> {
+impl State {
     pub fn merge(&mut self, mut other: State) {
         for (peer_id, username) in other.usernames.drain() {
             if !self.usernames.contains_key(&peer_id) {
