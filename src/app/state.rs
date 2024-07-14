@@ -1,6 +1,7 @@
+use crate::app::history::History;
+
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::app::history::History;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum MessageType {
@@ -20,6 +21,7 @@ pub struct Message {
 pub struct State {
     pub history: History<Message>,
     pub usernames: HashMap<String, String>,
+    pub counter_tick: u64,
 }
 
 impl State {
@@ -47,5 +49,17 @@ impl State {
             .get(usr)
             .unwrap_or(&String::from("n/d"))
             .to_string()
+    }
+
+    pub fn incr_tick(&mut self) {
+        self.counter_tick += 1;
+    }
+    
+    pub fn count_tick(&self) -> Option<u64> {
+        if self.counter_tick > 0 {
+            Some(self.counter_tick)
+        } else {
+            None
+        }
     }
 }

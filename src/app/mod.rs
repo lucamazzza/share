@@ -1,9 +1,16 @@
-pub(crate) mod history;
-pub(crate) mod state;
-pub(crate) mod ui;
+use self::action::Actions;
+use self::state::State;
+use crate::app::action::Action;
+use crate::app::state::{Message, MessageType};
+use crate::inputs::key::Key;
+use crate::io::IOEvent;
+
+pub mod action;
+pub mod state;
+pub mod ui;
+pub mod history;
 
 use futures::StreamExt;
-use crate::app::history::History;
 use libp2p::{
     core::upgrade,
     floodsub::{Floodsub, FloodsubEvent, Topic},
@@ -15,8 +22,7 @@ use libp2p::{
     PeerId,
     Swarm, swarm::NetworkBehaviourEventProcess, tcp::TcpConfig, Transport,
 };
-use log::{error, info};
-use crate::app::state::{Message, MessageType, State};
+use log::{debug, error, warn, info};
 use std::{collections::HashMap, process};
 use std::error::Error;
 use std::fs::metadata;
@@ -28,17 +34,78 @@ use tui::{
     widgets::{Block, Borders},
 };
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum AppReturn {
+    Exit,
+    Continue,
+}
+
 #[derive(NetworkBehaviour)]
 #[behaviour(event_process = true)]
-pub(crate) struct Chat {
+pub struct Chat {
     pub(crate) dns: Mdns,
-    pub(crate) messager: Floodsub,
+    pub messager: Floodsub,
     #[behaviour(ignore)]
     pub(crate) state: State,
     #[behaviour(ignore)]
     pub(crate) peer_id: String,
     #[behaviour(ignore)]
     pub(crate) responder: mpsc::UnboundedSender<Message>,
+    #[behaviour(ignore)]
+    pub(crate) actions: Actions,
+    #[behaviour(ignore)]
+    pub(crate) io_tx: mpsc::Sender<IOEvent>,
+}
+
+impl Chat {
+    pub async fn do_send(&mut self, msg: String, peer_id: PeerId, swarm: &mut Swarm<Chat>, topic: &mut Topic) -> AppReturn {
+        self.dispatch(IOEvent::Send).await;
+        let message: Message = Message {
+            message_type: MessageType::Message,
+            data: msg.as_bytes().to_vec(),
+            addressee: None,
+            source: peer_id.to_string(),
+        };
+        send_message(&message, swarm, &topic);
+        swarm
+            .behaviour_mut()
+            .state
+            .history
+            .push(message);
+        AppReturn::Continue
+    }
+
+    pub async fn do_action(&mut self, key: Key) -> AppReturn {
+        if let Some(action) = self.actions.find(key) {
+            debug!("Run action [{:?}]", action);
+            match action {
+                Action::Quit => return AppReturn::Exit,
+                Action::Send => {
+                    self.dispatch(IOEvent::Send).await;
+                    AppReturn::Continue
+                }
+            }
+        } else {
+            warn!("No action associated with key [{:?}]", key);
+            AppReturn::Continue
+        }
+    }
+
+    pub async fn update_on_tick(&mut self) -> AppReturn {
+        // here we just increment a counter
+        self.state.incr_tick();
+        AppReturn::Continue
+    }
+
+    pub async fn dispatch(&mut self, action: IOEvent) {
+        if let Err(e) = self.io_tx.send(action).await {
+            error!("Error sending IO event: {}", e);
+        }
+    }
+
+    pub fn actions(&self) -> &Actions {
+        &self.actions
+    }
 }
 
 impl NetworkBehaviourEventProcess<MdnsEvent> for Chat {
