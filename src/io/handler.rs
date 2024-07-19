@@ -30,7 +30,7 @@ impl IOAsyncHandler {
         info!("Done!");
         Ok(())
     }
-    
+
     async fn do_send(&mut self) -> Result<()> {
         info!("Sending...");
         let mut app = self.app.lock().await;

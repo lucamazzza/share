@@ -10,29 +10,15 @@ pub mod state;
 pub mod ui;
 pub mod history;
 
-use futures::StreamExt;
 use libp2p::{
-    core::upgrade,
     floodsub::{Floodsub, FloodsubEvent, Topic},
-    identity::{self},
-    mdns::{Mdns, MdnsConfig, MdnsEvent},
-    mplex,
+    mdns::{Mdns, MdnsEvent},
     NetworkBehaviour,
-    noise::{Keypair, NoiseConfig, X25519Spec},
     PeerId,
-    Swarm, swarm::NetworkBehaviourEventProcess, tcp::TcpConfig, Transport,
+    Swarm, swarm::NetworkBehaviourEventProcess,
 };
 use log::{debug, error, warn, info};
-use std::{collections::HashMap, process};
-use std::error::Error;
-use std::fs::metadata;
-use tokio::{io::AsyncBufReadExt, signal::ctrl_c, sync::mpsc};
-use tui::{
-    backend::Backend,
-    Frame,
-    layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders},
-};
+use tokio::{sync::mpsc};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum AppReturn {
